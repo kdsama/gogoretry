@@ -69,3 +69,34 @@ func TestRunIntervals(t *testing.T) {
 		}
 	})
 }
+
+func TestRetryErrors(t *testing.T) {
+	t.Run("Should return error ", func(t *testing.T) {
+		want := errors.New("Some error")
+		ll, _ := RetryErrors([]error{errors.New("Some other error")})
+		r := New(ll)
+		got := r.Run(func() error {
+			return RunError(want)
+		})
+		if got != want {
+			t.Errorf("Expected %v but got %v", want, got)
+		}
+
+	})
+	t.Run("Should Retry 5 times ", func(t *testing.T) {
+		arg := errors.New("Some error")
+		want := ErrNoResponse
+		ll, err := RetryErrors([]error{arg, errors.New("Some other error2"), errors.New("Some error2")})
+		if err != nil {
+			t.Error("Expected no error but got ", err)
+		}
+		r := New(ll)
+		got := r.Run(func() error {
+			return RunError(arg)
+		})
+		if !errors.Is(want, got) {
+			t.Errorf("Expected %v but got %v", want, got)
+		}
+
+	})
+}

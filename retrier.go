@@ -21,15 +21,35 @@ type Action func() error
 type Retrier struct {
 	// Sleep time between each retry . Defaults to 1 second
 	sleep time.Duration
+
 	// Maximum number of retries
 	maxRetries int
+
 	// Custom Intervals allow
 	intervals []time.Duration
+
+	// be sets badErrors true or false. Will be automatically disabled
+	// if the other one is enabled
+	be bool
+
+	// If any error from this list pops up, there  wont be any retry
+	badErrors map[error]bool
+
+	// be sets retryErrors true or false. Will be automatically disabled
+	// if the other one is enabled
+	re bool
+
+	// If list is shared, any error in retryErrors will be retried.
+	//Anyother error will lead to termination
+	retryErrors map[error]bool
 }
 
 func New(opts ...RetryOpts) *Retrier {
 
-	r := &Retrier{}
+	r := &Retrier{
+		badErrors:   map[error]bool{},
+		retryErrors: map[error]bool{},
+	}
 	// Load default settings
 	Default()(r)
 	for _, op := range opts {
@@ -47,8 +67,19 @@ func (r *Retrier) Run(fn Action) error {
 	var re func(fn Action) error
 	re = func(fn Action) error {
 		time.Sleep(500 * time.Millisecond)
-		if err := fn(); err != nil {
 
+		if err := fn(); err != nil {
+			if r.be {
+				if _, ok := r.badErrors[err]; ok {
+					return err
+				}
+			}
+
+			if r.re {
+				if _, ok := r.retryErrors[err]; !ok {
+					return err
+				}
+			}
 			count++
 
 			if count > r.maxRetries {

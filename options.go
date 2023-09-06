@@ -50,14 +50,28 @@ func Custom(td []time.Duration) (RetryOpts, error) {
 	}, nil
 }
 
-// func Exponential(d time.Duration, pow int) (RetryOpts, error) {
-// 	if d == 0 {
-// 		return nil, ErrAtleastOneEntry
-// 	}
-// 	return func(rt *Retrier) {
+func BadErrors(arr []error) (RetryOpts, error) {
 
-// 		for i := 1; i < d; i++ {
+	return func(rt *Retrier) {
+		// set retryErrorFlag to false
+		rt.re = false
+		rt.be = true
+		for _, e := range arr {
+			rt.badErrors[e] = true
+		}
 
-// 		}
-// 	}, nil
-// }
+	}, nil
+
+}
+
+func RetryErrors(arr []error) (RetryOpts, error) {
+	return func(rt *Retrier) {
+		// set badErrorFlag to false
+		rt.be = false
+		rt.re = true
+		for _, e := range arr {
+			rt.retryErrors[e] = true
+		}
+
+	}, nil
+}
