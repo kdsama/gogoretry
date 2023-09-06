@@ -12,6 +12,12 @@ import (
 // so functional Pattern is basically what we gonna pass
 //
 
+var (
+	ErrNoResponse = errors.New("no response from the service")
+)
+
+type Action func() error
+
 type Retrier struct {
 	// Sleep time between each retry . Defaults to 1 second
 	sleep time.Duration
@@ -32,25 +38,23 @@ func New(opts ...RetryOpts) *Retrier {
 	return r
 }
 
-type opts func() error
-
-func (r *Retrier) Run(fn opts) error {
+func (r *Retrier) Run(fn Action) error {
 	if len(r.intervals) > 0 {
 		return r.RunWithIntervals(fn)
 	}
 	var count int
 
-	var re func(fn opts) error
-	re = func(fn opts) error {
+	var re func(fn Action) error
+	re = func(fn Action) error {
 		time.Sleep(500 * time.Millisecond)
 		if err := fn(); err != nil {
 
 			count++
 
 			if count > r.maxRetries {
-				return errors.New("Oh how damn ")
+				return ErrNoResponse
 			}
-			re(fn)
+			return re(fn)
 		}
 		return nil
 	}
@@ -59,11 +63,11 @@ func (r *Retrier) Run(fn opts) error {
 	return e
 }
 
-func (r *Retrier) RunWithIntervals(fn opts) error {
+func (r *Retrier) RunWithIntervals(fn Action) error {
 	var count int
 
-	var re func(fn opts) error
-	re = func(fn opts) error {
+	var re func(fn Action) error
+	re = func(fn Action) error {
 		time.Sleep(r.intervals[count])
 		if err := fn(); err != nil {
 			count++

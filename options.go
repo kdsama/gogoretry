@@ -12,7 +12,7 @@ var (
 
 type RetryOpts func(rt *Retrier)
 
-// Set Maximum Number of Retries defaults to 5
+// Set Maximum Number of Retries. Returns error for < 1
 func MaxRetries(val int) (RetryOpts, error) {
 	if val < 1 {
 		return nil, ErrAtleastOneRetry
@@ -22,12 +22,14 @@ func MaxRetries(val int) (RetryOpts, error) {
 	}, nil
 }
 
+// Sets sleep Time
 func Sleep(t time.Duration) RetryOpts {
 	return func(rt *Retrier) {
 		rt.sleep = t
 	}
 }
 
+// Default configuration
 func Default() RetryOpts {
 	return func(rt *Retrier) {
 		rt.maxRetries = int(5)
@@ -35,6 +37,8 @@ func Default() RetryOpts {
 	}
 }
 
+// Custom time intervals. Retrier will automatically set maxRetry
+// according to the length of the input. Returns error for empty slice
 func Custom(td []time.Duration) (RetryOpts, error) {
 	// panic for empty time duration slice
 	if len(td) == 0 {
@@ -45,3 +49,15 @@ func Custom(td []time.Duration) (RetryOpts, error) {
 		rt.maxRetries = len(rt.intervals)
 	}, nil
 }
+
+// func Exponential(d time.Duration, pow int) (RetryOpts, error) {
+// 	if d == 0 {
+// 		return nil, ErrAtleastOneEntry
+// 	}
+// 	return func(rt *Retrier) {
+
+// 		for i := 1; i < d; i++ {
+
+// 		}
+// 	}, nil
+// }
