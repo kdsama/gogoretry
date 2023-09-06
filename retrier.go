@@ -71,10 +71,10 @@ func (r *Retrier) RunWithIntervals(fn Action) error {
 		time.Sleep(r.intervals[count])
 		if err := fn(); err != nil {
 			count++
-			if count > r.maxRetries {
-				return errors.New("limit exceeded")
+			if count >= r.maxRetries {
+				return ErrNoResponse
 			}
-			re(fn)
+			return re(fn)
 		}
 		return nil
 	}
