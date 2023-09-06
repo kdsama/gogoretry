@@ -101,6 +101,17 @@ func (r *Retrier) RunWithIntervals(fn Action) error {
 	re = func(fn Action) error {
 		time.Sleep(r.intervals[count])
 		if err := fn(); err != nil {
+			if r.be {
+				if _, ok := r.badErrors[err]; ok {
+					return err
+				}
+			}
+
+			if r.re {
+				if _, ok := r.retryErrors[err]; !ok {
+					return err
+				}
+			}
 			count++
 			if count >= r.maxRetries {
 				return ErrNoResponse

@@ -71,6 +71,45 @@ func TestRunIntervals(t *testing.T) {
 }
 
 func TestRetryErrors(t *testing.T) {
+	// testSuite
+
+	type testObject struct {
+		want    error
+		fnInput error
+		input   []error
+	}
+	targetError := errors.New("target error")
+	ts := map[string]testObject{
+		"Should Return PassedError": {
+			want:    targetError,
+			fnInput: targetError,
+			input:   []error{errors.New("Some other error")},
+		},
+		"Should return NoResponse": {
+			want:    ErrNoResponse,
+			fnInput: targetError,
+			input:   []error{targetError, errors.New("some random erro1"), errors.New("some random erro2")},
+		},
+	}
+	for name, obj := range ts {
+		t.Run(name, func(t *testing.T) {
+			ll, err := RetryErrors(obj.input)
+			if err != nil {
+				t.Error("Expected no error but got ", err)
+			}
+			r := New(ll)
+			got := r.Run(func() error {
+				return RunError(obj.fnInput)
+			})
+			if !errors.Is(obj.want, got) {
+				t.Errorf("Expected %v but got %v", obj.want, got)
+			}
+		})
+	}
+
+}
+
+func TestRetyErrors(t *testing.T) {
 	t.Run("Should return error ", func(t *testing.T) {
 		want := errors.New("Some error")
 		ll, _ := RetryErrors([]error{errors.New("Some other error")})
@@ -102,32 +141,40 @@ func TestRetryErrors(t *testing.T) {
 }
 
 func TestBadErrors(t *testing.T) {
-	t.Run("Should return error ", func(t *testing.T) {
-		want := errors.New("Some error")
-		ll, _ := BadErrors([]error{want})
-		r := New(ll)
-		got := r.Run(func() error {
-			return RunError(want)
-		})
-		if got != want {
-			t.Errorf("Expected %v but got %v", want, got)
-		}
+	// testSuite
 
-	})
-	t.Run("Should Retry 5 times ", func(t *testing.T) {
-		arg := errors.New("Some error")
-		want := ErrNoResponse
-		ll, err := BadErrors([]error{errors.New("Some other error2"), errors.New("Some error2")})
-		if err != nil {
-			t.Error("Expected no error but got ", err)
-		}
-		r := New(ll)
-		got := r.Run(func() error {
-			return RunError(arg)
+	type testObject struct {
+		want    error
+		fnInput error
+		input   []error
+	}
+	targetError := errors.New("target error")
+	ts := map[string]testObject{
+		"Should Return PassedError": {
+			want:    targetError,
+			fnInput: targetError,
+			input:   []error{targetError},
+		},
+		"Should return NoResponse": {
+			want:    ErrNoResponse,
+			fnInput: errors.New("Random Input"),
+			input:   []error{errors.New("some random erro1"), errors.New("some random erro2")},
+		},
+	}
+	for name, obj := range ts {
+		t.Run(name, func(t *testing.T) {
+			ll, err := BadErrors(obj.input)
+			if err != nil {
+				t.Error("Expected no error but got ", err)
+			}
+			r := New(ll)
+			got := r.Run(func() error {
+				return RunError(obj.fnInput)
+			})
+			if !errors.Is(obj.want, got) {
+				t.Errorf("Expected %v but got %v", obj.want, got)
+			}
 		})
-		if !errors.Is(want, got) {
-			t.Errorf("Expected %v but got %v", want, got)
-		}
+	}
 
-	})
 }
