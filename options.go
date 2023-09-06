@@ -50,6 +50,7 @@ func Custom(td []time.Duration) (RetryOpts, error) {
 	}, nil
 }
 
+// Set BadErrors array Option
 func BadErrors(arr []error) (RetryOpts, error) {
 
 	return func(rt *Retrier) {
@@ -64,6 +65,7 @@ func BadErrors(arr []error) (RetryOpts, error) {
 
 }
 
+// Set RetryErrors Array Option
 func RetryErrors(arr []error) (RetryOpts, error) {
 	return func(rt *Retrier) {
 		// set badErrorFlag to false

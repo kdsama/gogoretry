@@ -59,6 +59,7 @@ func New(opts ...RetryOpts) *Retrier {
 }
 
 func (r *Retrier) Run(fn Action) error {
+
 	if len(r.intervals) > 0 {
 		return r.RunWithIntervals(fn)
 	}
