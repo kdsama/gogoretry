@@ -5,19 +5,18 @@ import (
 	"time"
 )
 
-// So we need to make it cooler than before
-// We can have a normal one, Max number of retries, and a multiplier
-// By default we can set this to 5 and 1
-// Also what we can have is Custom. THis is where we gonna give
-// so functional Pattern is basically what we gonna pass
-//
-
 var (
+	//ErrNoResponse is the error returned when we have retried
+	// max number of times.
 	ErrNoResponse = errors.New("no response from the service")
 )
 
+// Action encapsulates the user method.
+// For user to implement it, they would have to wrap their function inside Action.
 type Action func() error
 
+// Retrier is the original struct will all the settings related to the
+// Gogoretrier package.
 type Retrier struct {
 	// Sleep time between each retry . Defaults to 1 second
 	sleep time.Duration
@@ -44,6 +43,7 @@ type Retrier struct {
 	retryErrors map[error]bool
 }
 
+// New initiates a retrier.
 func New(opts ...RetryOpts) *Retrier {
 
 	r := &Retrier{
@@ -58,6 +58,8 @@ func New(opts ...RetryOpts) *Retrier {
 	return r
 }
 
+// Run runs the user method wrapped inside Action
+// with a set number of retries according to the configuration
 func (r *Retrier) Run(fn Action) error {
 
 	if len(r.intervals) > 0 {
@@ -103,6 +105,9 @@ func (r *Retrier) Run(fn Action) error {
 	return e
 }
 
+// RunWithIntervals is similar to Run. Difference is that we have a slice
+// of time durations corresponding to each retry here, instead of maxRetries
+// and constant sleep gap.
 func (r *Retrier) RunWithIntervals(fn Action) error {
 	var (
 		count       int

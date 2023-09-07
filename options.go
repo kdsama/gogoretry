@@ -6,13 +6,18 @@ import (
 )
 
 var (
-	ErrAtleastOne      = errors.New("value should be greater than equal to 1")
+	//ErrAtleastOne is an error for when values passed is less than 1
+	ErrAtleastOne = errors.New("value should be greater than equal to 1")
+
+	//ErrAtleastOneEntry is an error for when atleast one entry,
+	// usually in a slice, is required.
 	ErrAtleastOneEntry = errors.New("atleast one entry is required")
 )
 
+// RetryOpts is used to set configuration of Retrier
 type RetryOpts func(rt *Retrier)
 
-// Set Maximum Number of Retries. Returns error for < 1
+// MaxRetries sets Maximum Number of Retries. Returns error for < 1
 func MaxRetries(val int) (RetryOpts, error) {
 	if val < 1 {
 		return nil, ErrAtleastOne
@@ -22,7 +27,7 @@ func MaxRetries(val int) (RetryOpts, error) {
 	}, nil
 }
 
-// Sets sleep Time
+// Sleep sets sleep Time
 func Sleep(t time.Duration) RetryOpts {
 	return func(rt *Retrier) {
 		rt.sleep = t
@@ -62,7 +67,8 @@ func Exponential(t time.Duration, multiplier int, maxRetries int) RetryOpts {
 	}
 }
 
-// Set BadErrors array Option
+// BadErrors sets errorSlice in retrier. Whenever these errors
+// come up, Retrier returns instead of retrying
 func BadErrors(arr []error) (RetryOpts, error) {
 
 	return func(rt *Retrier) {
@@ -77,7 +83,8 @@ func BadErrors(arr []error) (RetryOpts, error) {
 
 }
 
-// Set RetryErrors Array Option
+// RetryErrors sets an errorSlice in retrier. Whenever these errors
+// dont come up, Retrier returns instead of retrying.
 func RetryErrors(arr []error) (RetryOpts, error) {
 	return func(rt *Retrier) {
 		// set badErrorFlag to false
