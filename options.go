@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrAtleastOneRetry = errors.New("value should be greater than equal to 1")
+	ErrAtleastOne      = errors.New("value should be greater than equal to 1")
 	ErrAtleastOneEntry = errors.New("atleast one entry is required")
 )
 
@@ -15,7 +15,7 @@ type RetryOpts func(rt *Retrier)
 // Set Maximum Number of Retries. Returns error for < 1
 func MaxRetries(val int) (RetryOpts, error) {
 	if val < 1 {
-		return nil, ErrAtleastOneRetry
+		return nil, ErrAtleastOne
 	}
 	return func(rt *Retrier) {
 		rt.maxRetries = int(val)
@@ -48,6 +48,18 @@ func Custom(td []time.Duration) (RetryOpts, error) {
 		rt.intervals = td
 		rt.maxRetries = len(rt.intervals)
 	}, nil
+}
+
+// Exponential backoffs for
+func Exponential(t time.Duration, multiplier int, maxRetries int) RetryOpts {
+	var intervals = make([]time.Duration, maxRetries)
+	intervals[0] = t
+	for i := 1; i < maxRetries; i++ {
+		intervals[i] = intervals[i-1] * time.Duration(multiplier)
+	}
+	return func(rt *Retrier) {
+		rt.intervals = intervals
+	}
 }
 
 // Set BadErrors array Option

@@ -63,35 +63,43 @@ func (r *Retrier) Run(fn Action) error {
 	if len(r.intervals) > 0 {
 		return r.RunWithIntervals(fn)
 	}
-	var count int
+	var (
+		count       int
+		badErrors   = r.badErrors
+		be          = r.be
+		maxRetries  = r.maxRetries
+		re          = r.re
+		retryErrors = r.retryErrors
+		sleep       = r.sleep
+	)
 
-	var re func(fn Action) error
-	re = func(fn Action) error {
-		time.Sleep(500 * time.Millisecond)
+	var rn func(fn Action) error
+	rn = func(fn Action) error {
+		time.Sleep(sleep)
 
 		if err := fn(); err != nil {
-			if r.be {
-				if _, ok := r.badErrors[err]; ok {
+			if be {
+				if _, ok := badErrors[err]; ok {
 					return err
 				}
 			}
 
-			if r.re {
-				if _, ok := r.retryErrors[err]; !ok {
+			if re {
+				if _, ok := retryErrors[err]; !ok {
 					return err
 				}
 			}
 			count++
 
-			if count > r.maxRetries {
+			if count > maxRetries {
 				return ErrNoResponse
 			}
-			return re(fn)
+			return rn(fn)
 		}
 		return nil
 	}
 
-	e := re(fn)
+	e := rn(fn)
 	return e
 }
 

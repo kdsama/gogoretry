@@ -7,7 +7,7 @@ import (
 
 func TestMaxRetriesError(t *testing.T) {
 	_, got := MaxRetries(-1)
-	want := ErrAtleastOneRetry
+	want := ErrAtleastOne
 	if want != got {
 		t.Errorf("Wanted %v but got %v", want, got)
 	}
@@ -47,6 +47,25 @@ func TestCustom(t *testing.T) {
 	for i := range retryObj.intervals {
 		if arr[i] != retryObj.intervals[i] {
 			t.Errorf("%d th element does not match", i)
+		}
+	}
+
+}
+
+func TestExponentialIntervals(t *testing.T) {
+	var (
+		retries    = 5
+		ts         = 1 * time.Second
+		multiplier = 2
+		want       = []time.Duration{1 * time.Second, 2 * time.Second, 4 * time.Second, 8 * time.Second, 16 * time.Second}
+	)
+	l := Exponential(ts, multiplier, retries)
+	r := New(l)
+	got := r.intervals
+
+	for ind := range got {
+		if got[ind] != want[ind] {
+			t.Errorf("Wanted %v but got %v", want[ind], got[ind])
 		}
 	}
 
