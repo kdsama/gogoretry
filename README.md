@@ -7,5 +7,5 @@ a retry package
 
 
 
-[![Go Coverage](https://github.com/kdsama/gogoretry/wiki/coverage.svg)](https://raw.githack.com/wiki/kdsama/gogoretry/coverage.html)
+
 
