@@ -41,7 +41,9 @@ retrier := gogoretry.Custom(customIntervals)
 ```
 
 + Exponential Backoffs: Set up exponential backoffs with a time duration, multiplier, and max retries.
-``` retrier := gogoretry.Exponential(time.Second, 2, 5) ```
+```
+retrier := gogoretry.Exponential(time.Second, 2, 5)
+```
 
 + Handling Bad Errors: Specify a list of errors that, if encountered, will not trigger retries.
 ``` b
