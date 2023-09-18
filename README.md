@@ -35,19 +35,24 @@ You can customize the Retrier using the following options:
 ``` retrier := gogoretry.MaxRetries(5) ```
 
 + Custom Time Intervals: Provide a custom time interval slice for retries.
-``` customIntervals := []time.Duration{time.Second, 2 * time.Second, 5 * time.Second} 
-retrier := gogoretry.Custom(customIntervals) ```
+``` 
+customIntervals := []time.Duration{time.Second, 2 * time.Second, 5 * time.Second} 
+retrier := gogoretry.Custom(customIntervals) 
+```
 
 + Exponential Backoffs: Set up exponential backoffs with a time duration, multiplier, and max retries.
 ``` retrier := gogoretry.Exponential(time.Second, 2, 5) ```
 
 + Handling Bad Errors: Specify a list of errors that, if encountered, will not trigger retries.
-``` badErrors := []error{specificError1, specificError2} 
- retrier := gogoretry.BadErrors(badErrors) ```
+``` b
+badErrors := []error{specificError1, specificError2} 
+retrier := gogoretry.BadErrors(badErrors)
+```
 
 + Handling Retry Errors: Specify a list of errors that, if not encountered, will trigger retries.
 ``` retryErrors := []error{specificError1, specificError2} 
- retrier := gogoretry.RetryErrors(retryErrors) ```
+retrier := gogoretry.RetryErrors(retryErrors)
+```
 
 
 ## Running Retry Logic
@@ -56,7 +61,8 @@ err := retrier.Run(func() error {
     // Your code that may return an error goes here
     result, err := yourFunction()
     return err
-}) ```
+}) 
+```
 
 If err is not nil, it means the system attempted retries as per your settings and did not receive a successful response.
 
