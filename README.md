@@ -1,5 +1,7 @@
 # Gogoretry
 
+![example workflow](https://github.com/kdsama/gogoretry/actions/workflows/go.yml/badge.svg)
+
 ## Installation
 
 To install Gogoretry, use the following `go get` command:
@@ -60,6 +62,7 @@ If err is not nil, it means the system attempted retries as per your settings an
 
 ## Author/Contact
 Author : Kshitij 
+
 
 
 
